@@ -31,6 +31,8 @@ export function printSummary(summary: CopySummary, out: NodeJS.WritableStream = 
   for (const d of summary.details) {
     if (d.outcome === "failed") {
       out.write(`  failed: ${d.toolId}/${d.unitName}: ${d.message}\n`);
+    } else if (d.outcome === "skipped") {
+      out.write(`  skipped: ${d.toolId}/${d.unitName}${d.message ? ` (${d.message})` : ""}\n`);
     } else if (d.message) {
       out.write(`  ${d.outcome}: ${d.toolId}/${d.unitName} (${d.message})\n`);
     }
