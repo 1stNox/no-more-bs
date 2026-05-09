@@ -41,7 +41,7 @@ export function validateSkills(templatesSkillsDir: string): ValidationError[] {
     } catch (err) {
       errors.push({
         file: rel(skillMdPath),
-        message: `failed to parse YAML: ${err instanceof Error ? err.message : String(err)}`,
+        message: `failed to parse frontmatter: ${err instanceof Error ? err.message : String(err)}`,
       });
     }
   }

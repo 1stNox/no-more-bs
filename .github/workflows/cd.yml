@@ -20,7 +20,7 @@ jobs:
         id: version
         run: |
           TAG="${{ github.event.release.tag_name }}"
-          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Invalid release tag: $TAG (expected semver with 'v' prefix, e.g. v0.1.0)"
             exit 1
           fi
@@ -63,9 +63,9 @@ jobs:
           CURRENT_BODY=$(gh api "repos/${{ github.repository }}/releases/${{ github.event.release.id }}" --jq .body)
           NEW_BODY="${CURRENT_BODY}
 
----
+          ---
 
-📦 Published to npm as [\`no-more-bs@${VERSION}\`](https://www.npmjs.com/package/no-more-bs/v/${VERSION})"
+          📦 Published to npm as [\`no-more-bs@${VERSION}\`](https://www.npmjs.com/package/no-more-bs/v/${VERSION})"
           gh api "repos/${{ github.repository }}/releases/${{ github.event.release.id }}" -X PATCH -f body="$NEW_BODY"
         env:
           GH_TOKEN: ${{ github.token }}

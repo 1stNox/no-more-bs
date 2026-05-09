@@ -19,5 +19,6 @@ export function isBinaryOnPath(binary: string): boolean {
 }
 
 export function detectTool(t: Pick<Tool, "binary" | "configDir">): boolean {
-  return isBinaryOnPath(t.binary) || fs.existsSync(t.configDir);
+  if (isBinaryOnPath(t.binary)) return true;
+  try { return fs.statSync(t.configDir).isDirectory(); } catch { return false; }
 }

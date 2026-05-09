@@ -75,8 +75,7 @@ async function runInit(): Promise<number> {
   );
 
   printSummary(summary);
-  const total = summary.details.length;
-  return total > 0 && summary.failed === total ? 1 : 0;
+  return summary.failed > 0 ? 1 : 0;
 }
 
 if (import.meta.main) {

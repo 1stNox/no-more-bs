@@ -20,6 +20,9 @@ export function enumerate(templatesDir: string): Templates {
   }
 
   const skillsDir = path.join(templatesDir, "skills");
+  if (!fs.existsSync(skillsDir)) {
+    throw new Error(`missing ${skillsDir}`);
+  }
   const skills: SkillEntry[] = [];
 
   for (const entry of fs.readdirSync(skillsDir, { withFileTypes: true })) {
