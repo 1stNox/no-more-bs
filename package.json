@@ -1,5 +1,8 @@
 {
   "name": "no-more-bs",
+  "version": "0.1.0",
+  "description": "Bootstrap shared behavioural instructions and skills across Claude Code, Codex, and OpenCode.",
+  "license": "MIT",
   "module": "src/index.ts",
   "type": "module",
   "private": false,
