@@ -34,7 +34,7 @@ less install.sh
 bash install.sh
 ```
 
-The installer uses `bunx`, `pnpm dlx`, or `npx` if any are available; otherwise it installs Bun and uses `bunx`. It then runs `npx no-more-bs@latest init`.
+The installer probes for `bunx`, `pnpm dlx`, and `npx` in that order; otherwise it installs Bun and uses `bunx`. It then runs `no-more-bs@latest init` with whichever runner was found.
 
 If you already have a JS runner, you can skip the installer entirely:
 

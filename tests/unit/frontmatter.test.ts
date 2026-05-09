@@ -65,7 +65,7 @@ describe("validateSkills", () => {
 
   it("returns empty array for valid skills in real templates/skills/ directory", () => {
     const templatesSkillsDir = path.join(
-      __dirname,
+      import.meta.dir,
       "../../templates/skills"
     );
     const errors = validateSkills(templatesSkillsDir);

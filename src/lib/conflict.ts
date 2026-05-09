@@ -15,14 +15,14 @@ export interface ResolveInput {
   srcPath: string;
   dstPath: string;
   kind: "file" | "dir";
-  prompt: () => Promise<ResolverChoice>;
+  prompt: (unitName: string) => Promise<ResolverChoice>;
   out?: NodeJS.WritableStream;
 }
 
 export async function resolve(input: ResolveInput): Promise<ResolveResult> {
   const out = input.out ?? process.stdout;
   for (;;) {
-    const choice = await input.prompt();
+    const choice = await input.prompt(input.unitName);
     if (choice === "overwrite") return { action: "overwrite" };
     if (choice === "skip") return { action: "skip" };
     if (choice === "backup") {

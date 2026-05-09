@@ -69,7 +69,7 @@ async function runInit(): Promise<number> {
       tools: selectedTools,
       generalMd: tpl.generalMd,
       skills: selectedSkills,
-      prompt: () => pickConflict("file"),
+      prompt: (unitName) => pickConflict(unitName),
       out: process.stdout,
     },
     summary,

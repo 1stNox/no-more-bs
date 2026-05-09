@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 import { parseFrontmatter } from "../src/lib/frontmatter.ts";
 
 export interface ValidationError {
@@ -14,7 +15,10 @@ export function validateSkills(templatesSkillsDir: string): ValidationError[] {
   const parent = path.dirname(templatesSkillsDir);
   const rel = (p: string) => path.relative(parent, p);
 
-  for (const entry of fs.readdirSync(templatesSkillsDir, { withFileTypes: true })) {
+  const entries = fs.readdirSync(templatesSkillsDir, { withFileTypes: true });
+  const present = new Set(entries.filter((e) => e.isDirectory()).map((e) => e.name));
+
+  for (const entry of entries) {
     if (!entry.isDirectory()) continue;
 
     const skillId = entry.name;
@@ -42,11 +46,20 @@ export function validateSkills(templatesSkillsDir: string): ValidationError[] {
     }
   }
 
+  for (const skillId of REQUIRED_SKILLS) {
+    if (!present.has(skillId)) {
+      errors.push({
+        file: rel(path.join(templatesSkillsDir, skillId)),
+        message: "missing required skill directory",
+      });
+    }
+  }
+
   return errors;
 }
 
 if (import.meta.main) {
-  const scriptDir = path.dirname(new URL(import.meta.url).pathname);
+  const scriptDir = path.dirname(fileURLToPath(import.meta.url));
   const repoRoot = path.dirname(scriptDir);
   const errors = validateSkills(path.join(repoRoot, "templates", "skills"));
 

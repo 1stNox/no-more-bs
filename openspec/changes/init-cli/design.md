@@ -7,26 +7,32 @@ Single-binary Bun CLI that reads bundled templates from its own install path, pr
 ## Architecture Decisions
 
 ### Decision: Copy, not symlink/template/bootstrap
+
 Copy is the only mode users asked for and the only one that works across npm publish, ad-hoc curl install, and offline use. Symlinks break on Windows + npm cache cleanup; templating adds a syntax surface; bootstrap (re-fetch on every run) adds network dependency.
 - Rejected: symlink (cross-platform fragility).
 - Rejected: per-machine templating (no variable substitution requirement exists).
 
 ### Decision: User-global only, no project-local scope
+
 Mirrors how the three target tools actually load instructions and skills (all read user-global as the primary path). Project-local would multiply permutations (per-tool project dir conventions differ) without a user request behind it.
 
 ### Decision: Interactive checkbox UX, no flags for v1
+
 Removes flag surface area; aligns with "no features beyond what was asked" in `GENERAL.md`. Pre-check derived from detection (`PATH` lookup OR config dir exists) makes the happy path one Enter keypress.
 
 ### Decision: `required: true` skill frontmatter, enforced in CLI
+
 Need a way to lock `caveman` (referenced by `GENERAL.md` line 7) without hard-coding skill names in `src/index.ts`. Frontmatter flag keeps the rule next to the skill it governs and lets future skills opt-in.
 
 ### Decision: Stateless hash compare, atomic unit = file or dir
+
 No manifest means no drift between intended state and recorded state. Atomic unit grain matches user expectation: a skill is one unit (a single behavioural change), a top-level md is one unit. Hashing per file inside a skill would over-prompt for cosmetic edits inside a multi-file skill.
 
 - Top-level md: SHA-256 of file content.
 - Skill dir: SHA-256 of a sorted `path\0sha256(content)\0…` digest of every file under the dir, so any internal change flips the unit hash exactly once.
 
 ### Decision: Conflict resolver branches `[o]verwrite / [s]kip / [d]iff / [b]ackup`
+
 Four-way prompt covers the only outcomes a user could reasonably want at a divergent unit. `[d]` re-displays the prompt after rendering the diff (does not consume the choice).
 
 - `[o]` overwrite: write source over target.
@@ -37,20 +43,24 @@ Four-way prompt covers the only outcomes a user could reasonably want at a diver
 For skill dirs, `[b]` backs up the dir as `<dir>.bak`. If `<target>.bak` already exists, append a numeric suffix.
 
 ### Decision: `init` is the only verb; re-runs use update-framing
+
 One verb minimizes surface area and cognitive load. The CLI inspects target dirs at start and switches the banner copy ("Bootstrapping…" vs "Updating existing install at…") so re-runs do not lie about being fresh installs.
 
 ### Decision: Per-unit try/catch, never abort
+
 A failed write to one tool's dir (e.g. `~/.claude/skills/foo` chmod 000) must not block writes to the other two tools. Errors accumulate into the final summary; exit code is 0 if any unit succeeded and 1 only if every unit failed. `SIGINT` prints the accumulated summary and exits 130.
 
 ### Decision: Source of truth = bundled npm package
+
 CLI reads from `import.meta.dir` resolving to its own install path. Versioning the templates with the CLI keeps runtime and assets in lockstep — no possibility of a CLI upgrade fighting old templates or vice versa.
 
 ### Decision: Repo layout — promote `templates/` to top level
+
 Moving `src/instructions/GENERAL.md` → `templates/GENERAL.md` and `src/skills/*` → `templates/skills/*` separates "code that runs" (`src/`) from "data that ships" (`templates/`). `package.json` `files` array gates exactly these two dirs into the tarball.
 
 ## Data Flow
 
-```
+```text
                   ┌──────────────────────────┐
                   │ npx no-more-bs init      │
                   └──────────────┬───────────┘

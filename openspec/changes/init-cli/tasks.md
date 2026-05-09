@@ -87,7 +87,7 @@
 
 - [ ] 10.1 Write `tests/unit/prompts.test.ts` (using `@inquirer/prompts` test helpers or by injecting a prompt fn): tool checkbox pre-checks detected tools; skill checkbox marks `required:true` skills as non-toggleable (selecting nothing still includes them).
 - [ ] 10.2 Implement `src/lib/prompts.ts`:
-  - `pickTools(detection)` → `checkbox` with `checked: detection[id]`, label suffix ` (not detected)` for falsy.
+  - `pickTools(detection)` → `checkbox` with `checked: detection[id]`, label suffix `(not detected)` for falsy.
   - `pickSkills(skills)` → `checkbox` with required entries marked `disabled: "required"` and `checked: true`; merge required IDs into the returned list unconditionally.
 - [ ] 10.3 Tests pass. Commit.
 
@@ -116,6 +116,7 @@
 ## 13. Installer + README
 
 - [ ] 13.1 Write `install.sh` at repo root:
+
   ```sh
   #!/usr/bin/env bash
   set -euo pipefail
@@ -129,6 +130,7 @@
   fi
   exec $runner no-more-bs@latest init
   ```
+
 - [ ] 13.2 Smoke-test `install.sh` in a clean shell where bun is absent (use `env -i PATH=/usr/bin:/bin bash install.sh` against a local registry or skip the `npx` step in dry-run).
 - [ ] 13.3 Update `README.md`:
   - One-liner install: `curl -fsSL https://raw.githubusercontent.com/<owner>/no-more-bs/main/install.sh | bash`.
