@@ -3,10 +3,27 @@
   "module": "src/index.ts",
   "type": "module",
   "private": false,
+  "bin": {
+    "no-more-bs": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "scripts": {
+    "build": "bun build src/index.ts --target=node --outfile=dist/index.js",
+    "test": "bun test",
+    "prepack": "bun run scripts/validate-frontmatter.ts && bun run build"
+  },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/diff": "^8.0.0"
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^8.4.2",
+    "diff": "^9.0.0"
   }
 }
