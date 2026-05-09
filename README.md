@@ -48,6 +48,10 @@ npx no-more-bs@latest init
 
 Developer documentation lives in [`docs/`](./docs/README.md).
 
+## Credits
+
+- [Matt Pocock](https://github.com/mattpocock/skills/tree/main) — skills concept and structure
+
 ## License
 
 MIT.
