@@ -1,5 +1,5 @@
-import { describe, it, expect } from "bun:test";
-import { pickTools, pickSkills, pickConflict } from "../../src/lib/prompts.ts";
+import { describe, expect, it } from "bun:test";
+import { pickConflict, pickSkills, pickTools } from "../../src/lib/prompts.ts";
 import type { Tool } from "../../src/lib/registry.ts";
 import type { SkillEntry } from "../../src/lib/templates.ts";
 
@@ -37,8 +37,16 @@ describe("pickTools", () => {
     }) as any;
 
     const result = await pickTools(TOOLS, { claude: true, codex: false }, { checkbox: stub });
-    expect(captured.choices[0]).toMatchObject({ value: "claude", checked: true, name: "Claude Code" });
-    expect(captured.choices[1]).toMatchObject({ value: "codex", checked: false, name: "Codex (not detected)" });
+    expect(captured.choices[0]).toMatchObject({
+      value: "claude",
+      checked: true,
+      name: "Claude Code",
+    });
+    expect(captured.choices[1]).toMatchObject({
+      value: "codex",
+      checked: false,
+      name: "Codex (not detected)",
+    });
     expect(result.map((t) => t.id)).toEqual(["claude"]);
   });
 

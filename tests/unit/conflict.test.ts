@@ -1,19 +1,19 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import fs from "fs";
-import os from "os";
-import path from "path";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import {
-  resolve,
   nextBackupPath,
-  renderDiff,
   type ResolverChoice,
+  renderDiff,
+  resolve,
 } from "../../src/lib/conflict.ts";
 
 const sequencePrompt = (choices: ResolverChoice[]) => {
   let i = 0;
-  return async () => {
+  return async (_unitName: string) => {
     if (i >= choices.length) throw new Error("prompt called too many times");
-    return choices[i++];
+    return choices[i++]!;
   };
 };
 
@@ -53,9 +53,7 @@ describe("resolve", () => {
   it("renders diff and re-prompts when user picks diff", async () => {
     const writes: string[] = [];
     const out = { write: (s: string) => (writes.push(s), true) } as any;
-    const r = await resolve(
-      baseInput({ prompt: sequencePrompt(["diff", "skip"]), out }),
-    );
+    const r = await resolve(baseInput({ prompt: sequencePrompt(["diff", "skip"]), out }));
     expect(r).toEqual({ action: "skip" });
     expect(writes.length).toBe(1);
     expect(writes[0]).toContain("src content");
@@ -65,6 +63,7 @@ describe("resolve", () => {
     const input = baseInput({ prompt: sequencePrompt(["backup"]) });
     const r = await resolve(input);
     expect(r.action).toBe("backup");
+    if (r.action !== "backup") throw new Error("expected backup");
     expect(r.backupPath).toBe(`${input.dstPath}.bak`);
   });
 
@@ -72,6 +71,8 @@ describe("resolve", () => {
     const input = baseInput({ prompt: sequencePrompt(["backup"]) });
     fs.writeFileSync(`${input.dstPath}.bak`, "older backup");
     const r = await resolve(input);
+    expect(r.action).toBe("backup");
+    if (r.action !== "backup") throw new Error("expected backup");
     expect(r.backupPath).toBe(`${input.dstPath}.bak.1`);
   });
 });

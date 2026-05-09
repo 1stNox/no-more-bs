@@ -1,9 +1,9 @@
-import { describe, it, expect, afterEach } from "bun:test";
-import fs from "fs";
-import path from "path";
-import os from "os";
-import { parseFrontmatter, type SkillFrontmatter } from "../../src/lib/frontmatter.ts";
-import { validateSkills, type ValidationError } from "../../scripts/validate-frontmatter.ts";
+import { afterEach, describe, expect, it } from "bun:test";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { validateSkills } from "../../scripts/validate-frontmatter.ts";
+import { parseFrontmatter } from "../../src/lib/frontmatter.ts";
 
 describe("parseFrontmatter", () => {
   it("parses well-formed frontmatter into SkillFrontmatter object", () => {
@@ -64,10 +64,7 @@ describe("validateSkills", () => {
   });
 
   it("returns empty array for valid skills in real templates/skills/ directory", () => {
-    const templatesSkillsDir = path.join(
-      import.meta.dir,
-      "../../templates/skills"
-    );
+    const templatesSkillsDir = path.join(import.meta.dir, "../../templates/skills");
     const errors = validateSkills(templatesSkillsDir);
     expect(errors).toEqual([]);
   });
@@ -82,13 +79,13 @@ describe("validateSkills", () => {
       `---
 name: test-skill
 ---
-Content here`
+Content here`,
     );
 
     const errors = validateSkills(tempDir);
     expect(errors.length).toBeGreaterThan(0);
-    expect(errors[0].file).toContain("test-skill");
-    expect(errors[0].message).toContain("description");
+    expect(errors[0]!.file).toContain("test-skill");
+    expect(errors[0]!.message).toContain("description");
   });
 
   it("returns validation error when caveman is missing required: true flag", () => {
@@ -103,13 +100,13 @@ name: caveman
 description: >
   Test description
 ---
-Content here`
+Content here`,
     );
 
     const errors = validateSkills(tempDir);
     expect(errors.length).toBeGreaterThan(0);
-    expect(errors[0].file).toContain("caveman");
-    expect(errors[0].message).toContain("required");
+    expect(errors[0]!.file).toContain("caveman");
+    expect(errors[0]!.message).toContain("required");
   });
 
   it("returns error when SKILL.md is missing", () => {
@@ -120,7 +117,7 @@ Content here`
 
     const errors = validateSkills(tempDir);
     expect(errors.length).toBeGreaterThan(0);
-    expect(errors[0].file).toContain("orphan-skill");
-    expect(errors[0].message).toContain("missing SKILL.md");
+    expect(errors[0]!.file).toContain("orphan-skill");
+    expect(errors[0]!.message).toContain("missing SKILL.md");
   });
 });

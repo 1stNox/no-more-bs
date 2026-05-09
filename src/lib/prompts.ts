@@ -1,7 +1,7 @@
 import { checkbox, select } from "@inquirer/prompts";
+import type { ResolverChoice } from "./conflict.ts";
 import type { Tool } from "./registry.ts";
 import type { SkillEntry } from "./templates.ts";
-import type { ResolverChoice } from "./conflict.ts";
 
 export interface PromptDeps {
   checkbox?: typeof checkbox;

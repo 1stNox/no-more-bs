@@ -10,8 +10,9 @@ export function parseFrontmatter(source: string): SkillFrontmatter {
   const match = source.match(FENCE);
   if (!match) throw new Error("missing frontmatter fences");
   const block = match[1];
+  if (block === undefined) throw new Error("empty frontmatter block");
 
-  if (/:  :/.test(block) || /: :/.test(block)) {
+  if (/: {2}:/.test(block) || /: :/.test(block)) {
     throw new Error("malformed YAML: double-colon sequence");
   }
 
@@ -22,9 +23,9 @@ export function parseFrontmatter(source: string): SkillFrontmatter {
 
   const folded = (key: string): string | undefined => {
     const head = block.match(
-      new RegExp(`^${key}:[ \\t]+>[ \\t]*\\r?\\n([\\s\\S]*?)(?=^\\S|$(?!\\n))`, "m")
+      new RegExp(`^${key}:[ \\t]+>[ \\t]*\\r?\\n([\\s\\S]*?)(?=^\\S|$(?!\\n))`, "m"),
     );
-    if (!head) return undefined;
+    if (!head || head[1] === undefined) return undefined;
     return head[1]
       .split(/\r?\n/)
       .map((l) => l.replace(/^[ \t]+/, ""))
@@ -37,8 +38,7 @@ export function parseFrontmatter(source: string): SkillFrontmatter {
   if (!name) throw new Error("name missing or empty");
 
   const descSingle = single("description");
-  const description =
-    descSingle && descSingle !== ">" ? descSingle : folded("description");
+  const description = descSingle && descSingle !== ">" ? descSingle : folded("description");
   if (!description) throw new Error("description missing or empty");
 
   const required = /^required:\s*true\s*$/m.test(block);

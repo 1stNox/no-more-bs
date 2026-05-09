@@ -1,7 +1,7 @@
-import { describe, it, expect, afterEach } from "bun:test";
-import fs from "fs";
-import os from "os";
-import path from "path";
+import { afterEach, describe, expect, it } from "bun:test";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { enumerate } from "../../src/lib/templates.ts";
 
 const REPO_TEMPLATES = path.join(import.meta.dir, "../../templates");
@@ -52,6 +52,8 @@ describe("enumerate (fixture)", () => {
       `---\nname: alpha\ndescription: A test skill.\n---\n`,
     );
     const t = enumerate(tmp);
-    expect(t.skills).toEqual([{ id: "alpha", dir: path.join(skillsDir, "alpha"), required: false }]);
+    expect(t.skills).toEqual([
+      { id: "alpha", dir: path.join(skillsDir, "alpha"), required: false },
+    ]);
   });
 });

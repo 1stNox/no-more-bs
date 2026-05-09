@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import crypto from "crypto";
-import fs from "fs";
-import os from "os";
-import path from "path";
-import { hashFile, hashDir } from "../../src/lib/hash.ts";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import crypto from "node:crypto";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { hashDir, hashFile } from "../../src/lib/hash.ts";
 
 describe("hashFile", () => {
   it("returns sha256 hex of file contents", () => {

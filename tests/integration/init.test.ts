@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import fs from "fs";
-import os from "os";
-import path from "path";
-import { copy, type CopySummary } from "../../src/lib/copy.ts";
-import { enumerate } from "../../src/lib/templates.ts";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { type CopySummary, copy } from "../../src/lib/copy.ts";
 import { pickSkills } from "../../src/lib/prompts.ts";
 import type { Tool } from "../../src/lib/registry.ts";
+import { enumerate } from "../../src/lib/templates.ts";
 
 const REPO_TEMPLATES = path.join(import.meta.dir, "../../templates");
 
@@ -85,7 +85,10 @@ describe("init integration", () => {
     await copy({ tools, generalMd: tpl.generalMd, skills: tpl.skills, prompt: overwrite });
 
     const summary: CopySummary = { installed: 0, skipped: 0, failed: 0, details: [] };
-    await copy({ tools, generalMd: tpl.generalMd, skills: tpl.skills, prompt: failPrompt }, summary);
+    await copy(
+      { tools, generalMd: tpl.generalMd, skills: tpl.skills, prompt: failPrompt },
+      summary,
+    );
 
     expect(summary.installed).toBe(0);
     expect(summary.failed).toBe(0);
@@ -94,12 +97,12 @@ describe("init integration", () => {
 
   it("conflict skip leaves user-modified file alone", async () => {
     const tpl = enumerate(REPO_TEMPLATES);
-    await copy({ tools: [tools[0]], generalMd: tpl.generalMd, skills: [], prompt: overwrite });
+    await copy({ tools: [tools[0]!], generalMd: tpl.generalMd, skills: [], prompt: overwrite });
     const target = path.join(home, ".claude", "CLAUDE.md");
     fs.writeFileSync(target, "user edit\n");
 
     await copy({
-      tools: [tools[0]],
+      tools: [tools[0]!],
       generalMd: tpl.generalMd,
       skills: [],
       prompt: skip,
@@ -110,12 +113,12 @@ describe("init integration", () => {
 
   it("conflict backup preserves user copy and writes source", async () => {
     const tpl = enumerate(REPO_TEMPLATES);
-    await copy({ tools: [tools[0]], generalMd: tpl.generalMd, skills: [], prompt: overwrite });
+    await copy({ tools: [tools[0]!], generalMd: tpl.generalMd, skills: [], prompt: overwrite });
     const target = path.join(home, ".claude", "CLAUDE.md");
     fs.writeFileSync(target, "user edit\n");
 
     await copy({
-      tools: [tools[0]],
+      tools: [tools[0]!],
       generalMd: tpl.generalMd,
       skills: [],
       prompt: backup,
@@ -136,9 +139,9 @@ describe("init integration", () => {
     if (process.platform === "win32") return;
     const tpl = enumerate(REPO_TEMPLATES);
 
-    fs.mkdirSync(tools[0].configDir, { recursive: true });
-    fs.mkdirSync(tools[0].skillsDir, { recursive: true });
-    fs.chmodSync(tools[0].skillsDir, 0o400);
+    fs.mkdirSync(tools[0]!.configDir, { recursive: true });
+    fs.mkdirSync(tools[0]!.skillsDir, { recursive: true });
+    fs.chmodSync(tools[0]!.skillsDir, 0o400);
 
     try {
       const summary = await copy({
@@ -147,15 +150,21 @@ describe("init integration", () => {
         skills: tpl.skills,
         prompt: overwrite,
       });
-      const claudeFails = summary.details.filter((d) => d.toolId === "claude" && d.outcome === "failed").length;
-      const codexInstalls = summary.details.filter((d) => d.toolId === "codex" && d.outcome === "installed").length;
-      const opencodeInstalls = summary.details.filter((d) => d.toolId === "opencode" && d.outcome === "installed").length;
+      const claudeFails = summary.details.filter(
+        (d) => d.toolId === "claude" && d.outcome === "failed",
+      ).length;
+      const codexInstalls = summary.details.filter(
+        (d) => d.toolId === "codex" && d.outcome === "installed",
+      ).length;
+      const opencodeInstalls = summary.details.filter(
+        (d) => d.toolId === "opencode" && d.outcome === "installed",
+      ).length;
 
       expect(claudeFails).toBeGreaterThan(0);
       expect(codexInstalls).toBe(1 + tpl.skills.length);
       expect(opencodeInstalls).toBe(1 + tpl.skills.length);
     } finally {
-      fs.chmodSync(tools[0].skillsDir, 0o700);
+      fs.chmodSync(tools[0]!.skillsDir, 0o700);
     }
   });
 });

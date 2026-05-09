@@ -1,14 +1,14 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { createPatch } from "diff";
 
 export type ResolverChoice = "overwrite" | "skip" | "diff" | "backup";
 export type Action = "overwrite" | "skip" | "backup";
 
-export interface ResolveResult {
-  action: Action;
-  backupPath?: string;
-}
+export type ResolveResult =
+  | { action: "overwrite" }
+  | { action: "skip" }
+  | { action: "backup"; backupPath: string };
 
 export interface ResolveInput {
   unitName: string;

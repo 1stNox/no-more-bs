@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import type { Tool } from "./registry.ts";
 
 export function isBinaryOnPath(binary: string): boolean {
@@ -13,9 +13,7 @@ export function isBinaryOnPath(binary: string): boolean {
       if (!st.isFile()) continue;
       if (process.platform === "win32") return true;
       if ((st.mode & 0o111) !== 0) return true;
-    } catch {
-      continue;
-    }
+    } catch {}
   }
   return false;
 }

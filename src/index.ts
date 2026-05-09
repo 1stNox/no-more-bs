@@ -1,13 +1,12 @@
 #!/usr/bin/env node
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-
-import { getTools } from "./lib/registry.ts";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { type CopySummary, copy } from "./lib/copy.ts";
 import { detectTool } from "./lib/detect.ts";
+import { pickConflict, pickSkills, pickTools } from "./lib/prompts.ts";
+import { getTools } from "./lib/registry.ts";
 import { enumerate } from "./lib/templates.ts";
-import { copy, type CopySummary } from "./lib/copy.ts";
-import { pickTools, pickSkills, pickConflict } from "./lib/prompts.ts";
 
 export interface ArgvParse {
   ok: boolean;

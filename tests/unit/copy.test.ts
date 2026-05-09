@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import fs from "fs";
-import os from "os";
-import path from "path";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { copy } from "../../src/lib/copy.ts";
 import type { Tool } from "../../src/lib/registry.ts";
 import type { SkillEntry } from "../../src/lib/templates.ts";
@@ -45,11 +45,18 @@ describe("copy", () => {
   afterEach(() => fs.rmSync(tmp, { recursive: true, force: true }));
 
   it("installs both units on a fresh target", async () => {
-    const summary = await copy({ tools: [tool], generalMd, skills: [skill], prompt: always("overwrite") });
+    const summary = await copy({
+      tools: [tool],
+      generalMd,
+      skills: [skill],
+      prompt: always("overwrite"),
+    });
     expect(summary.installed).toBe(2);
     expect(summary.skipped).toBe(0);
     expect(summary.failed).toBe(0);
-    expect(fs.readFileSync(path.join(tool.configDir, "CLAUDE.md"), "utf-8")).toBe("general content\n");
+    expect(fs.readFileSync(path.join(tool.configDir, "CLAUDE.md"), "utf-8")).toBe(
+      "general content\n",
+    );
     expect(fs.existsSync(path.join(tool.skillsDir, "alpha", "SKILL.md"))).toBe(true);
   });
 
@@ -58,7 +65,12 @@ describe("copy", () => {
       throw new Error("prompt should not be called");
     };
     await copy({ tools: [tool], generalMd, skills: [skill], prompt: always("overwrite") });
-    const summary = await copy({ tools: [tool], generalMd, skills: [skill], prompt: failingPrompt });
+    const summary = await copy({
+      tools: [tool],
+      generalMd,
+      skills: [skill],
+      prompt: failingPrompt,
+    });
     expect(summary.installed).toBe(0);
     expect(summary.skipped).toBe(2);
     expect(summary.failed).toBe(0);
@@ -76,7 +88,9 @@ describe("copy", () => {
     });
     expect(summary.installed).toBe(1);
     expect(summary.skipped).toBe(1);
-    expect(fs.readFileSync(path.join(tool.configDir, "CLAUDE.md"), "utf-8")).toBe("general content\n");
+    expect(fs.readFileSync(path.join(tool.configDir, "CLAUDE.md"), "utf-8")).toBe(
+      "general content\n",
+    );
   });
 
   it("records failure but continues with remaining units", async () => {

@@ -1,9 +1,9 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
+import { type ResolveInput, resolve } from "./conflict.ts";
+import { hashDir, hashFile } from "./hash.ts";
 import type { Tool } from "./registry.ts";
 import type { SkillEntry } from "./templates.ts";
-import { hashFile, hashDir } from "./hash.ts";
-import { resolve, type ResolveInput } from "./conflict.ts";
 
 export type UnitKind = "file" | "dir";
 export type Outcome = "installed" | "skipped" | "failed";
@@ -106,8 +106,8 @@ export async function copy(input: CopyInput, summary?: CopySummary): Promise<Cop
         } else if (r.action === "overwrite") {
           writeUnit(u.src, dst, u.kind);
           record(tool.id, u.name, "installed");
-        } else {
-          fs.renameSync(dst, r.backupPath!);
+        } else if (r.action === "backup") {
+          fs.renameSync(dst, r.backupPath);
           writeUnit(u.src, dst, u.kind);
           record(tool.id, u.name, "installed", `backup at ${r.backupPath}`);
         }
