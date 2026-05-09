@@ -72,8 +72,8 @@ function writeUnit(src: string, dst: string, kind: UnitKind) {
   }
 }
 
-export async function copy(input: CopyInput): Promise<CopySummary> {
-  const summary: CopySummary = { installed: 0, skipped: 0, failed: 0, details: [] };
+export async function copy(input: CopyInput, summary?: CopySummary): Promise<CopySummary> {
+  summary = summary ?? { installed: 0, skipped: 0, failed: 0, details: [] };
 
   const record = (toolId: string, unitName: string, outcome: Outcome, message?: string) => {
     summary[outcome]++;
