@@ -1,117 +1,43 @@
 import fs from "fs";
 import path from "path";
-
-export interface SkillFrontmatter {
-  name: string;
-  description: string;
-  required?: boolean;
-}
+import { parseFrontmatter } from "../src/lib/frontmatter.ts";
 
 export interface ValidationError {
   file: string;
   message: string;
 }
 
-const FENCE = /^---\r?\n([\s\S]*?)\r?\n---/;
 const REQUIRED_SKILLS = ["caveman"] as const;
 
-export function parseFrontmatter(source: string): SkillFrontmatter {
-  const match = source.match(FENCE);
-  if (!match) throw new Error("missing frontmatter fences");
-  const block = match[1];
-
-  if (/:  :/.test(block) || /: :/.test(block)) {
-    throw new Error("malformed YAML: double-colon sequence");
-  }
-
-  const single = (key: string): string | undefined => {
-    const m = block.match(new RegExp(`^${key}:[ \\t]+(.+?)\\s*$`, "m"));
-    return m?.[1];
-  };
-
-  const folded = (key: string): string | undefined => {
-    const head = block.match(
-      new RegExp(`^${key}:[ \\t]+>[ \\t]*\\r?\\n([\\s\\S]*?)(?=^\\S|$(?!\\n))`, "m")
-    );
-    if (!head) return undefined;
-    return head[1]
-      .split(/\r?\n/)
-      .map((l) => l.replace(/^[ \t]+/, ""))
-      .filter(Boolean)
-      .join(" ")
-      .trim();
-  };
-
-  const name = single("name");
-  if (!name) throw new Error("name missing or empty");
-
-  const descSingle = single("description");
-  const description =
-    descSingle && descSingle !== ">" ? descSingle : folded("description");
-  if (!description) throw new Error("description missing or empty");
-
-  const required = /^required:\s*true\s*$/m.test(block);
-
-  return { name, description, required };
-}
-
-/**
- * Validate all skills in templatesSkillsDir.
- * Returns array of validation errors.
- */
 export function validateSkills(templatesSkillsDir: string): ValidationError[] {
   const errors: ValidationError[] = [];
+  const parent = path.dirname(templatesSkillsDir);
+  const rel = (p: string) => path.relative(parent, p);
 
-  const entries = fs.readdirSync(templatesSkillsDir, { withFileTypes: true });
-
-  for (const entry of entries) {
+  for (const entry of fs.readdirSync(templatesSkillsDir, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
 
     const skillId = entry.name;
-    const skillPath = path.join(templatesSkillsDir, skillId);
-    const skillMdPath = path.join(skillPath, "SKILL.md");
+    const skillMdPath = path.join(templatesSkillsDir, skillId, "SKILL.md");
 
     if (!fs.existsSync(skillMdPath)) {
-      errors.push({
-        file: path.relative(path.dirname(templatesSkillsDir), path.join(skillPath, "SKILL.md")),
-        message: "missing SKILL.md",
-      });
+      errors.push({ file: rel(skillMdPath), message: "missing SKILL.md" });
       continue;
     }
 
-    let frontmatter: SkillFrontmatter;
     try {
       const content = fs.readFileSync(skillMdPath, "utf-8");
-      frontmatter = parseFrontmatter(content);
+      const fm = parseFrontmatter(content);
+      if ((REQUIRED_SKILLS as readonly string[]).includes(skillId) && fm.required !== true) {
+        errors.push({
+          file: rel(skillMdPath),
+          message: `${skillId} skill must have required: true`,
+        });
+      }
     } catch (err) {
       errors.push({
-        file: path.relative(path.dirname(templatesSkillsDir), skillMdPath),
+        file: rel(skillMdPath),
         message: `failed to parse YAML: ${err instanceof Error ? err.message : String(err)}`,
-      });
-      continue;
-    }
-
-    if (!frontmatter.name || typeof frontmatter.name !== "string") {
-      errors.push({
-        file: path.relative(path.dirname(templatesSkillsDir), skillMdPath),
-        message: "missing or invalid name",
-      });
-    }
-
-    if (!frontmatter.description || typeof frontmatter.description !== "string") {
-      errors.push({
-        file: path.relative(path.dirname(templatesSkillsDir), skillMdPath),
-        message: "missing or invalid description",
-      });
-    }
-
-    if (
-      (REQUIRED_SKILLS as readonly string[]).includes(skillId) &&
-      frontmatter.required !== true
-    ) {
-      errors.push({
-        file: path.relative(path.dirname(templatesSkillsDir), skillMdPath),
-        message: `${skillId} skill must have required: true`,
       });
     }
   }
@@ -119,19 +45,14 @@ export function validateSkills(templatesSkillsDir: string): ValidationError[] {
   return errors;
 }
 
-// CLI entry point
 if (import.meta.main) {
   const scriptDir = path.dirname(new URL(import.meta.url).pathname);
   const repoRoot = path.dirname(scriptDir);
-  const templatesSkillsDir = path.join(repoRoot, "templates", "skills");
-  const errors = validateSkills(templatesSkillsDir);
+  const errors = validateSkills(path.join(repoRoot, "templates", "skills"));
 
   if (errors.length) {
-    for (const e of errors) {
-      console.error(`${e.file}: ${e.message}`);
-    }
+    for (const e of errors) console.error(`${e.file}: ${e.message}`);
     process.exit(1);
   }
-
   process.exit(0);
 }

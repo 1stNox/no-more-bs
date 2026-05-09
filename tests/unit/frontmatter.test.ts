@@ -2,12 +2,8 @@ import { describe, it, expect, afterEach } from "bun:test";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import {
-  parseFrontmatter,
-  validateSkills,
-  type SkillFrontmatter,
-  type ValidationError,
-} from "../../scripts/validate-frontmatter";
+import { parseFrontmatter, type SkillFrontmatter } from "../../src/lib/frontmatter.ts";
+import { validateSkills, type ValidationError } from "../../scripts/validate-frontmatter.ts";
 
 describe("parseFrontmatter", () => {
   it("parses well-formed frontmatter into SkillFrontmatter object", () => {
