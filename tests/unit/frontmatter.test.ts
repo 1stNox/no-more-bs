@@ -43,6 +43,19 @@ description: >
 ---`;
     expect(() => parseFrontmatter(source)).toThrow();
   });
+
+  it("parses inline single-line description (real skill format)", () => {
+    const source = `---
+name: tdd
+description: Test-driven development with red-green-refactor loop.
+---
+Content`;
+
+    const result = parseFrontmatter(source);
+    expect(result.name).toBe("tdd");
+    expect(result.description).toBe("Test-driven development with red-green-refactor loop.");
+    expect(result.required).toBe(false);
+  });
 });
 
 describe("validateSkills", () => {

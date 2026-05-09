@@ -12,111 +12,47 @@ export interface ValidationError {
   message: string;
 }
 
-/**
- * Parse YAML frontmatter between leading --- fences.
- * Handles simple YAML: key: value, key: > multiline literal block.
- */
+const FENCE = /^---\r?\n([\s\S]*?)\r?\n---/;
+const REQUIRED_SKILLS = ["caveman"] as const;
+
 export function parseFrontmatter(source: string): SkillFrontmatter {
-  const lines = source.split("\n");
+  const match = source.match(FENCE);
+  if (!match) throw new Error("missing frontmatter fences");
+  const block = match[1];
 
-  // Find opening ---
-  if (!lines[0] || !lines[0].trim().startsWith("---")) {
-    throw new Error("Missing opening --- fence");
+  if (/:  :/.test(block) || /: :/.test(block)) {
+    throw new Error("malformed YAML: double-colon sequence");
   }
 
-  // Find closing ---
-  let closingIndex = -1;
-  for (let i = 1; i < lines.length; i++) {
-    if (lines[i].trim().startsWith("---")) {
-      closingIndex = i;
-      break;
-    }
-  }
-  if (closingIndex === -1) {
-    throw new Error("Missing closing --- fence");
-  }
-
-  const yamlLines = lines.slice(1, closingIndex);
-  const yaml = yamlLines.join("\n");
-
-  // Parse simple YAML: name, description, required
-  const result: SkillFrontmatter = {
-    name: "",
-    description: "",
+  const single = (key: string): string | undefined => {
+    const m = block.match(new RegExp(`^${key}:[ \\t]+(.+?)\\s*$`, "m"));
+    return m?.[1];
   };
 
-  let i = 0;
-  while (i < yamlLines.length) {
-    const line = yamlLines[i];
+  const folded = (key: string): string | undefined => {
+    const head = block.match(
+      new RegExp(`^${key}:[ \\t]+>[ \\t]*\\r?\\n([\\s\\S]*?)(?=^\\S|$(?!\\n))`, "m")
+    );
+    if (!head) return undefined;
+    return head[1]
+      .split(/\r?\n/)
+      .map((l) => l.replace(/^[ \t]+/, ""))
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+  };
 
-    // Skip empty lines
-    if (!line.trim()) {
-      i++;
-      continue;
-    }
+  const name = single("name");
+  if (!name) throw new Error("name missing or empty");
 
-    // Check for invalid YAML syntax on non-indented lines (keys)
-    if (!line.startsWith(" ") && !line.startsWith("\t")) {
-      if (line.includes(":  :") || line.includes(": :")) {
-        throw new Error(`Malformed YAML: ${line}`);
-      }
+  const descSingle = single("description");
+  const description =
+    descSingle && descSingle !== ">" ? descSingle : folded("description");
+  if (!description) throw new Error("description missing or empty");
 
-      // Parse key: value
-      const colonIndex = line.indexOf(":");
-      if (colonIndex === -1) {
-        throw new Error(`Malformed YAML line: ${line}`);
-      }
+  const required = /^required:\s*true\s*$/m.test(block);
 
-      const key = line.substring(0, colonIndex).trim();
-      let value = line.substring(colonIndex + 1).trim();
-
-      if (key === "name") {
-        result.name = value;
-      } else if (key === "required") {
-        result.required = value === "true";
-      } else if (key === "description") {
-        // Handle description: value or description: > multiline
-        if (value === ">") {
-          // Multiline literal block
-          const multilines: string[] = [];
-          i++;
-          while (i < yamlLines.length) {
-            const nextLine = yamlLines[i];
-            if (!nextLine.trim()) {
-              i++;
-              break;
-            }
-            // Check if this line is a new key (not indented, contains :)
-            if (
-              !nextLine.startsWith(" ") &&
-              !nextLine.startsWith("\t") &&
-              nextLine.includes(":")
-            ) {
-              // Back up: this is the next key
-              i--;
-              break;
-            }
-            // Line is part of multiline description
-            // Check for malformed YAML within literal block
-            if (nextLine.includes(":  :") || nextLine.includes(": :")) {
-              throw new Error(
-                `Malformed YAML in literal block: ${nextLine.trim()}`
-              );
-            }
-            multilines.push(nextLine.trim());
-            i++;
-          }
-          result.description = multilines.join(" ");
-        } else {
-          result.description = value;
-        }
-      }
-    }
-
-    i++;
-  }
-
-  return result;
+  return { name, description, required };
 }
 
 /**
@@ -126,31 +62,23 @@ export function parseFrontmatter(source: string): SkillFrontmatter {
 export function validateSkills(templatesSkillsDir: string): ValidationError[] {
   const errors: ValidationError[] = [];
 
-  // Iterate immediate subdirectories
   const entries = fs.readdirSync(templatesSkillsDir, { withFileTypes: true });
 
   for (const entry of entries) {
-    if (!entry.isDirectory()) {
-      continue;
-    }
+    if (!entry.isDirectory()) continue;
 
     const skillId = entry.name;
     const skillPath = path.join(templatesSkillsDir, skillId);
     const skillMdPath = path.join(skillPath, "SKILL.md");
 
-    // Check if SKILL.md exists
     if (!fs.existsSync(skillMdPath)) {
       errors.push({
-        file: path.relative(
-          path.dirname(templatesSkillsDir),
-          path.join(skillPath, "SKILL.md")
-        ),
+        file: path.relative(path.dirname(templatesSkillsDir), path.join(skillPath, "SKILL.md")),
         message: "missing SKILL.md",
       });
       continue;
     }
 
-    // Read and parse SKILL.md
     let frontmatter: SkillFrontmatter;
     try {
       const content = fs.readFileSync(skillMdPath, "utf-8");
@@ -163,7 +91,6 @@ export function validateSkills(templatesSkillsDir: string): ValidationError[] {
       continue;
     }
 
-    // Validate name exists and is non-empty
     if (!frontmatter.name || typeof frontmatter.name !== "string") {
       errors.push({
         file: path.relative(path.dirname(templatesSkillsDir), skillMdPath),
@@ -171,22 +98,20 @@ export function validateSkills(templatesSkillsDir: string): ValidationError[] {
       });
     }
 
-    // Validate description exists and is non-empty
-    if (
-      !frontmatter.description ||
-      typeof frontmatter.description !== "string"
-    ) {
+    if (!frontmatter.description || typeof frontmatter.description !== "string") {
       errors.push({
         file: path.relative(path.dirname(templatesSkillsDir), skillMdPath),
         message: "missing or invalid description",
       });
     }
 
-    // Validate caveman has required: true
-    if (skillId === "caveman" && frontmatter.required !== true) {
+    if (
+      (REQUIRED_SKILLS as readonly string[]).includes(skillId) &&
+      frontmatter.required !== true
+    ) {
       errors.push({
         file: path.relative(path.dirname(templatesSkillsDir), skillMdPath),
-        message: "caveman skill must have required: true",
+        message: `${skillId} skill must have required: true`,
       });
     }
   }
@@ -196,7 +121,6 @@ export function validateSkills(templatesSkillsDir: string): ValidationError[] {
 
 // CLI entry point
 if (import.meta.main) {
-  // Resolve relative to this script's location
   const scriptDir = path.dirname(new URL(import.meta.url).pathname);
   const repoRoot = path.dirname(scriptDir);
   const templatesSkillsDir = path.join(repoRoot, "templates", "skills");
