@@ -35,9 +35,11 @@ Re-runs pick up rebuilds without re-linking. Unlink with `bun unlink no-more-bs`
 
 ```sh
 bun run build
-npm pack                          # produces no-more-bs-0.1.0.tgz
-cd /tmp && mkdir nmb-test && cd nmb-test
-npm install -g ../no-more-bs/no-more-bs-0.1.0.tgz
+TARBALL=$(npm pack --silent)      # prints the generated .tgz filename
+mkdir -p /tmp/nmb-test
+mv "$TARBALL" /tmp/nmb-test/
+cd /tmp/nmb-test
+npm install -g "./$TARBALL"
 no-more-bs init
 ```
 
