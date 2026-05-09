@@ -1,0 +1,12 @@
+{
+  "name": "no-more-bs",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": false,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
