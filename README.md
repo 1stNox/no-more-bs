@@ -42,6 +42,8 @@ If you already have a JS runner, you can skip the installer entirely:
 npx no-more-bs@latest init
 ```
 
+> **Windows:** the CLI is not tested on Windows. It should work via `npx`/`bunx`, but config-directory paths (especially OpenCode's `~/.config/opencode/`) may not match where your tools actually look on Windows. Verify the install landed in the expected place before relying on it.
+
 ## Contributing
 
 Developer documentation lives in [`docs/`](./docs/README.md).
