@@ -4,13 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { type CopySummary, copy } from "./lib/copy.ts";
 import { detectTool } from "./lib/detect.ts";
-import {
-  pickConflict,
-  pickProjectTool,
-  pickScope,
-  pickSkills,
-  pickTools,
-} from "./lib/prompts.ts";
+import { pickConflict, pickProjectTool, pickScope, pickSkills, pickTools } from "./lib/prompts.ts";
 import { getProjectTools, getTools, type Tool } from "./lib/registry.ts";
 import { enumerate } from "./lib/templates.ts";
 

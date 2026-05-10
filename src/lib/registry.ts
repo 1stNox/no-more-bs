@@ -78,4 +78,3 @@ export function getProjectTools(cwd: string): Tool[] {
     },
   ];
 }
-
