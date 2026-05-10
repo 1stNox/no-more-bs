@@ -24,7 +24,7 @@
     "format": "biome check --write .",
     "typecheck": "tsc --noEmit",
     "prepack": "bun run scripts/validate-frontmatter.ts && bun run build",
-    "prepare": "lefthook install || true"
+    "prepare": "lefthook install"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.14",
