@@ -4,8 +4,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { type CopySummary, copy } from "./lib/copy.ts";
 import { detectTool } from "./lib/detect.ts";
-import { pickConflict, pickSkills, pickTools } from "./lib/prompts.ts";
-import { getTools } from "./lib/registry.ts";
+import { pickConflict, pickProjectTool, pickScope, pickSkills, pickTools } from "./lib/prompts.ts";
+import { getProjectTools, getTools, type Tool } from "./lib/registry.ts";
 import { enumerate } from "./lib/templates.ts";
 
 export interface ArgvParse {
@@ -40,22 +40,39 @@ export function printSummary(summary: CopySummary, out: NodeJS.WritableStream = 
 }
 
 async function runInit(): Promise<number> {
-  const tools = getTools();
-  const detected: Record<string, boolean> = {};
-  for (const t of tools) detected[t.id] = detectTool(t);
-
-  const existing = tools.filter((t) => fs.existsSync(t.configDir));
-  const banner = existing.length
-    ? `Updating existing install at: ${existing.map((t) => t.configDir).join(", ")}\n`
-    : `Bootstrapping fresh install\n`;
-  process.stdout.write(banner);
-
+  const scope = await pickScope();
   const tpl = enumerate(defaultTemplatesDir());
-  const selectedTools = await pickTools(tools, detected);
-  if (selectedTools.length === 0) {
-    process.stdout.write("No tools selected. Nothing to do.\n");
-    return 0;
+
+  let selectedTools: Tool[];
+  if (scope === "user") {
+    const tools = getTools();
+    const detected: Record<string, boolean> = {};
+    for (const t of tools) detected[t.id] = detectTool(t);
+
+    const existing = tools.filter((t) => fs.existsSync(t.configDir));
+    const banner = existing.length
+      ? `Updating existing install at: ${existing.map((t) => t.configDir).join(", ")}\n`
+      : `Bootstrapping fresh install\n`;
+    process.stdout.write(banner);
+
+    selectedTools = await pickTools(tools, detected);
+    if (selectedTools.length === 0) {
+      process.stdout.write("No tools selected. Nothing to do.\n");
+      return 0;
+    }
+  } else {
+    const cwd = process.cwd();
+    process.stdout.write(`Installing into project: ${cwd}\n`);
+    const projectTools = getProjectTools(cwd);
+    const picked = await pickProjectTool(projectTools);
+    if (picked.id === "codex" || picked.id === "opencode") {
+      process.stdout.write(
+        "Codex and OpenCode share the AGENTS format — both are covered by this install.\n",
+      );
+    }
+    selectedTools = [picked];
   }
+
   const selectedSkills = await pickSkills(tpl.skills);
 
   const summary: CopySummary = { installed: 0, skipped: 0, failed: 0, details: [] };

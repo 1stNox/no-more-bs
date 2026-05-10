@@ -4,7 +4,14 @@ Bootstrap shared behavioural instructions and reusable skills across Claude Code
 
 ## What it does
 
-`no-more-bs init` copies a curated `GENERAL.md` (renamed to `CLAUDE.md` or `AGENTS.md` per tool) plus a set of skills into the user-global config directory of each agentic-coding tool you use:
+`no-more-bs init` first asks for the install scope:
+
+- **User** (global, all projects) — copies into the user-global config dir of each selected tool.
+- **Project** (current directory) — copies into the cwd for one chosen format.
+
+### User scope
+
+Curated `GENERAL.md` (renamed to `CLAUDE.md` or `AGENTS.md` per tool) plus a set of skills land in the user-global config directory of each agentic-coding tool you select:
 
 | Tool        | Config dir              | Top-level file | Skills dir                    |
 |-------------|-------------------------|----------------|-------------------------------|
@@ -12,7 +19,19 @@ Bootstrap shared behavioural instructions and reusable skills across Claude Code
 | Codex       | `~/.agents/`            | `AGENTS.md`    | `~/.agents/skills/`           |
 | OpenCode    | `~/.config/opencode/`   | `AGENTS.md`    | `~/.config/opencode/skills/`  |
 
-Tools are pre-checked when their binary is on `PATH` or their config directory exists. Skills marked `required: true` (currently `caveman`) are non-toggleable. Re-runs are idempotent: the CLI hashes each unit and silently skips matches; on mismatch you get a per-unit prompt with `[o]verwrite / [s]kip / [d]iff / [b]ackup`.
+Tools are pre-checked when their binary is on `PATH` or their config directory exists.
+
+### Project scope
+
+Pick one tool for the current directory. Codex and OpenCode share the AGENTS format — picking either covers both.
+
+| Tool                         | Top-level file        | Skills dir                  |
+|------------------------------|-----------------------|-----------------------------|
+| Claude Code                  | `<cwd>/CLAUDE.md`     | `<cwd>/.claude/skills/`     |
+| Codex                        | `<cwd>/AGENTS.md`     | `<cwd>/.agents/skills/`     |
+| OpenCode                     | `<cwd>/AGENTS.md`     | `<cwd>/.agents/skills/`     |
+
+Skills marked `required: true` (currently `caveman`) are non-toggleable. Re-runs are idempotent: the CLI hashes each unit and silently skips matches; on mismatch you get a per-unit prompt with `[o]verwrite / [s]kip / [d]iff / [b]ackup`.
 
 ## Bundled skills
 

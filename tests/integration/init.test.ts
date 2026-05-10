@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { type CopySummary, copy } from "../../src/lib/copy.ts";
 import { pickSkills } from "../../src/lib/prompts.ts";
-import type { Tool } from "../../src/lib/registry.ts";
+import { getProjectTools, type Tool } from "../../src/lib/registry.ts";
 import { enumerate } from "../../src/lib/templates.ts";
 
 const REPO_TEMPLATES = path.join(import.meta.dir, "../../templates");
@@ -133,6 +133,67 @@ describe("init integration", () => {
     const stub = (async () => []) as any;
     const result = await pickSkills(tpl.skills, { checkbox: stub });
     expect(result.find((s) => s.id === "caveman")).toBeDefined();
+  });
+
+  it("project scope (claude): writes CLAUDE.md and .claude/skills under cwd", async () => {
+    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "proj-"));
+    try {
+      const tpl = enumerate(REPO_TEMPLATES);
+      const claude = getProjectTools(cwd).find((t) => t.id === "claude")!;
+      const summary = await copy({
+        tools: [claude],
+        generalMd: tpl.generalMd,
+        skills: tpl.skills,
+        prompt: overwrite,
+      });
+      expect(summary.failed).toBe(0);
+      expect(fs.existsSync(path.join(cwd, "CLAUDE.md"))).toBe(true);
+      expect(fs.existsSync(path.join(cwd, ".claude", "skills", "caveman", "SKILL.md"))).toBe(true);
+      expect(fs.existsSync(path.join(cwd, ".agents"))).toBe(false);
+      expect(fs.existsSync(path.join(cwd, "AGENTS.md"))).toBe(false);
+    } finally {
+      fs.rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  it("project scope (codex): writes AGENTS.md and .agents/skills under cwd", async () => {
+    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "proj-"));
+    try {
+      const tpl = enumerate(REPO_TEMPLATES);
+      const codex = getProjectTools(cwd).find((t) => t.id === "codex")!;
+      const summary = await copy({
+        tools: [codex],
+        generalMd: tpl.generalMd,
+        skills: tpl.skills,
+        prompt: overwrite,
+      });
+      expect(summary.failed).toBe(0);
+      expect(fs.existsSync(path.join(cwd, "AGENTS.md"))).toBe(true);
+      expect(fs.existsSync(path.join(cwd, ".agents", "skills", "caveman", "SKILL.md"))).toBe(true);
+      expect(fs.existsSync(path.join(cwd, ".claude"))).toBe(false);
+      expect(fs.existsSync(path.join(cwd, "CLAUDE.md"))).toBe(false);
+    } finally {
+      fs.rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  it("project scope (opencode): same paths as codex", async () => {
+    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "proj-"));
+    try {
+      const tpl = enumerate(REPO_TEMPLATES);
+      const opencode = getProjectTools(cwd).find((t) => t.id === "opencode")!;
+      const summary = await copy({
+        tools: [opencode],
+        generalMd: tpl.generalMd,
+        skills: tpl.skills,
+        prompt: overwrite,
+      });
+      expect(summary.failed).toBe(0);
+      expect(fs.existsSync(path.join(cwd, "AGENTS.md"))).toBe(true);
+      expect(fs.existsSync(path.join(cwd, ".agents", "skills", "caveman", "SKILL.md"))).toBe(true);
+    } finally {
+      fs.rmSync(cwd, { recursive: true, force: true });
+    }
   });
 
   it("partial failure: one tool's skillsDir parent unwritable, other tools still install", async () => {

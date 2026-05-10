@@ -1,6 +1,12 @@
 import { describe, expect, it } from "bun:test";
-import { pickConflict, pickSkills, pickTools } from "../../src/lib/prompts.ts";
-import type { Tool } from "../../src/lib/registry.ts";
+import {
+  pickConflict,
+  pickProjectTool,
+  pickScope,
+  pickSkills,
+  pickTools,
+} from "../../src/lib/prompts.ts";
+import { getProjectTools, type Tool } from "../../src/lib/registry.ts";
 import type { SkillEntry } from "../../src/lib/templates.ts";
 
 const TOOLS: Tool[] = [
@@ -80,6 +86,60 @@ describe("pickSkills", () => {
     const caveman = captured.choices.find((c: any) => c.value === "caveman");
     expect(caveman.disabled).toBe("required");
     expect(caveman.checked).toBe(true);
+  });
+});
+
+describe("pickScope", () => {
+  it("offers user and project scopes", async () => {
+    let captured: any;
+    const stub = (async (cfg: any) => {
+      captured = cfg;
+      return "user";
+    }) as any;
+    const result = await pickScope({ select: stub });
+    expect(result).toBe("user");
+    const values = captured.choices.map((c: any) => c.value);
+    expect(values).toEqual(["user", "project"]);
+  });
+
+  it("returns project when selected", async () => {
+    const stub = (async () => "project") as any;
+    expect(await pickScope({ select: stub })).toBe("project");
+  });
+});
+
+describe("pickProjectTool", () => {
+  it("returns the chosen tool (codex → AGENTS paths)", async () => {
+    const tools = getProjectTools("/tmp/proj");
+    const stub = (async () => "codex") as any;
+    const result = await pickProjectTool(tools, { select: stub });
+    expect(result.id).toBe("codex");
+    expect(result.topLevelMd).toBe("AGENTS.md");
+    expect(result.skillsDir).toBe("/tmp/proj/.agents/skills");
+  });
+
+  it("offers exactly Claude / Codex / OpenCode", async () => {
+    const tools = getProjectTools("/tmp/proj");
+    let captured: any;
+    const stub = (async (cfg: any) => {
+      captured = cfg;
+      return "claude";
+    }) as any;
+    const result = await pickProjectTool(tools, { select: stub });
+    const values = captured.choices.map((c: any) => c.value);
+    expect(values).toEqual(["claude", "codex", "opencode"]);
+    expect(result.id).toBe("claude");
+    expect(result.configDir).toBe("/tmp/proj");
+    expect(result.skillsDir).toBe("/tmp/proj/.claude/skills");
+  });
+
+  it("codex and opencode resolve to identical project paths", async () => {
+    const tools = getProjectTools("/tmp/proj");
+    const codex = tools.find((t) => t.id === "codex")!;
+    const opencode = tools.find((t) => t.id === "opencode")!;
+    expect(codex.topLevelMd).toBe(opencode.topLevelMd);
+    expect(codex.skillsDir).toBe(opencode.skillsDir);
+    expect(codex.configDir).toBe(opencode.configDir);
   });
 });
 

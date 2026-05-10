@@ -1,6 +1,6 @@
 {
   "name": "no-more-bs",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Bootstrap shared behavioural instructions and skills across Claude Code, Codex, and OpenCode.",
   "license": "MIT",
   "repository": {
@@ -23,12 +23,14 @@
     "lint": "biome check .",
     "format": "biome check --write .",
     "typecheck": "tsc --noEmit",
-    "prepack": "bun run scripts/validate-frontmatter.ts && bun run build"
+    "prepack": "bun run scripts/validate-frontmatter.ts && bun run build",
+    "prepare": "lefthook install"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.14",
     "@types/bun": "latest",
-    "@types/diff": "^8.0.0"
+    "@types/diff": "^8.0.0",
+    "lefthook": "^2.1.6"
   },
   "peerDependencies": {
     "typescript": "^6.0.3"

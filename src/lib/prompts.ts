@@ -1,11 +1,33 @@
 import { checkbox, select } from "@inquirer/prompts";
 import type { ResolverChoice } from "./conflict.ts";
-import type { Tool } from "./registry.ts";
+import type { Scope, Tool } from "./registry.ts";
 import type { SkillEntry } from "./templates.ts";
 
 export interface PromptDeps {
   checkbox?: typeof checkbox;
   select?: typeof select;
+}
+
+export async function pickScope(deps: PromptDeps = {}): Promise<Scope> {
+  const ask = deps.select ?? select;
+  return (await ask({
+    message: "Install scope:",
+    choices: [
+      { name: "User (global, all projects)", value: "user" },
+      { name: "Project (current directory)", value: "project" },
+    ],
+  })) as Scope;
+}
+
+export async function pickProjectTool(tools: Tool[], deps: PromptDeps = {}): Promise<Tool> {
+  const ask = deps.select ?? select;
+  const id = (await ask({
+    message: "Select coding agent format:",
+    choices: tools.map((t) => ({ name: t.label, value: t.id })),
+  })) as string;
+  const t = tools.find((x) => x.id === id);
+  if (!t) throw new Error(`unknown tool: ${id}`);
+  return t;
 }
 
 export async function pickTools(
