@@ -29,7 +29,6 @@
   "devDependencies": {
     "@biomejs/biome": "^2.4.14",
     "@types/bun": "latest",
-    "@types/diff": "^8.0.0",
     "lefthook": "^2.1.6"
   },
   "peerDependencies": {
