@@ -65,13 +65,20 @@ const failPrompt = async () => {
 describe("init integration", () => {
   let home: string;
   let tools: Tool[];
+  let originalCopilotHome: string | undefined;
 
   beforeEach(() => {
+    originalCopilotHome = process.env.COPILOT_HOME;
     home = fs.mkdtempSync(path.join(os.tmpdir(), "init-"));
+    process.env.COPILOT_HOME = path.join(home, ".copilot");
     tools = fakeTools(home);
   });
 
-  afterEach(() => fs.rmSync(home, { recursive: true, force: true }));
+  afterEach(() => {
+    if (originalCopilotHome === undefined) delete process.env.COPILOT_HOME;
+    else process.env.COPILOT_HOME = originalCopilotHome;
+    fs.rmSync(home, { recursive: true, force: true });
+  });
 
   it("fresh install writes correct tree to all five tool dirs", async () => {
     const tpl = enumerate(REPO_TEMPLATES);

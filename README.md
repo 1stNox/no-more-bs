@@ -19,7 +19,7 @@ Curated `GENERAL.md` (renamed to `CLAUDE.md` or `AGENTS.md` per tool) plus a set
 | Codex           | `~/.agents/`            | `AGENTS.md`    | `~/.agents/skills/`           |
 | OpenCode        | `~/.config/opencode/`   | `AGENTS.md`    | `~/.config/opencode/skills/`  |
 | Pi              | `~/.pi/agent/`          | `AGENTS.md`    | `~/.pi/agent/skills/`         |
-| GitHub Copilot  | `~/.copilot/`           | `AGENTS.md`    | `~/.copilot/skills/`          |
+| GitHub Copilot  | `~/.copilot/` or `$COPILOT_HOME` | `AGENTS.md`    | `~/.copilot/skills/` or `$COPILOT_HOME/skills/` |
 
 Tools are pre-checked when their binary is on `PATH` or their config directory exists.
 
