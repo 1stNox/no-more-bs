@@ -35,6 +35,14 @@ function fakeTools(home: string): Tool[] {
       topLevelMd: "AGENTS.md",
       skillsDir: path.join(home, ".config", "opencode", "skills"),
     },
+    {
+      id: "pi",
+      label: "Pi",
+      binary: "pi",
+      configDir: path.join(home, ".pi", "agent"),
+      topLevelMd: "AGENTS.md",
+      skillsDir: path.join(home, ".pi", "agent", "skills"),
+    },
   ];
 }
 
@@ -56,7 +64,7 @@ describe("init integration", () => {
 
   afterEach(() => fs.rmSync(home, { recursive: true, force: true }));
 
-  it("fresh install writes correct tree to all three tool dirs", async () => {
+  it("fresh install writes correct tree to all four tool dirs", async () => {
     const tpl = enumerate(REPO_TEMPLATES);
     const summary = await copy({
       tools,
@@ -72,12 +80,16 @@ describe("init integration", () => {
     expect(fs.existsSync(path.join(home, ".claude", "CLAUDE.md"))).toBe(true);
     expect(fs.existsSync(path.join(home, ".agents", "AGENTS.md"))).toBe(true);
     expect(fs.existsSync(path.join(home, ".config", "opencode", "AGENTS.md"))).toBe(true);
+    expect(fs.existsSync(path.join(home, ".pi", "agent", "AGENTS.md"))).toBe(true);
 
     const generalSrc = fs.readFileSync(tpl.generalMd, "utf-8");
     expect(fs.readFileSync(path.join(home, ".agents", "AGENTS.md"), "utf-8")).toBe(generalSrc);
 
     expect(fs.existsSync(path.join(home, ".claude", "skills", "caveman", "SKILL.md"))).toBe(true);
     expect(fs.existsSync(path.join(home, ".agents", "skills", "tdd", "SKILL.md"))).toBe(true);
+    expect(fs.existsSync(path.join(home, ".pi", "agent", "skills", "caveman", "SKILL.md"))).toBe(
+      true,
+    );
   });
 
   it("idempotent re-run produces zero prompts", async () => {
@@ -196,8 +208,30 @@ describe("init integration", () => {
     }
   });
 
+  it("project scope (pi): writes AGENTS.md and .pi/skills under cwd", async () => {
+    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "proj-"));
+    try {
+      const tpl = enumerate(REPO_TEMPLATES);
+      const pi = getProjectTools(cwd).find((t) => t.id === "pi")!;
+      const summary = await copy({
+        tools: [pi],
+        generalMd: tpl.generalMd,
+        skills: tpl.skills,
+        prompt: overwrite,
+      });
+      expect(summary.failed).toBe(0);
+      expect(fs.existsSync(path.join(cwd, "AGENTS.md"))).toBe(true);
+      expect(fs.existsSync(path.join(cwd, ".pi", "skills", "caveman", "SKILL.md"))).toBe(true);
+      expect(fs.existsSync(path.join(cwd, ".agents"))).toBe(false);
+      expect(fs.existsSync(path.join(cwd, ".claude"))).toBe(false);
+    } finally {
+      fs.rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
   it("partial failure: one tool's skillsDir parent unwritable, other tools still install", async () => {
     if (process.platform === "win32") return;
+    if (process.getuid?.() === 0) return; // root ignores chmod restrictions
     const tpl = enumerate(REPO_TEMPLATES);
 
     fs.mkdirSync(tools[0]!.configDir, { recursive: true });
@@ -220,10 +254,14 @@ describe("init integration", () => {
       const opencodeInstalls = summary.details.filter(
         (d) => d.toolId === "opencode" && d.outcome === "installed",
       ).length;
+      const piInstalls = summary.details.filter(
+        (d) => d.toolId === "pi" && d.outcome === "installed",
+      ).length;
 
       expect(claudeFails).toBeGreaterThan(0);
       expect(codexInstalls).toBe(1 + tpl.skills.length);
       expect(opencodeInstalls).toBe(1 + tpl.skills.length);
+      expect(piInstalls).toBe(1 + tpl.skills.length);
     } finally {
       fs.chmodSync(tools[0]!.skillsDir, 0o700);
     }
