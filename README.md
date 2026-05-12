@@ -1,6 +1,6 @@
 # no-more-bs
 
-Bootstrap shared behavioural instructions and reusable skills across Claude Code, Codex, and OpenCode in one interactive command.
+Bootstrap shared behavioural instructions and reusable skills across Claude Code, Codex, OpenCode, Pi, and GitHub Copilot in one interactive command.
 
 ## What it does
 
@@ -13,11 +13,12 @@ Bootstrap shared behavioural instructions and reusable skills across Claude Code
 
 Curated `GENERAL.md` (renamed to `CLAUDE.md` or `AGENTS.md` per tool) plus a set of skills land in the user-global config directory of each agentic-coding tool you select:
 
-| Tool        | Config dir              | Top-level file | Skills dir                    |
-|-------------|-------------------------|----------------|-------------------------------|
-| Claude Code | `~/.claude/`            | `CLAUDE.md`    | `~/.claude/skills/`           |
-| Codex       | `~/.agents/`            | `AGENTS.md`    | `~/.agents/skills/`           |
-| OpenCode    | `~/.config/opencode/`   | `AGENTS.md`    | `~/.config/opencode/skills/`  |
+| Tool            | Config dir              | Top-level file | Skills dir                    |
+|-----------------|-------------------------|----------------|-------------------------------|
+| Claude Code     | `~/.claude/`            | `CLAUDE.md`    | `~/.claude/skills/`           |
+| Codex           | `~/.agents/`            | `AGENTS.md`    | `~/.agents/skills/`           |
+| OpenCode        | `~/.config/opencode/`   | `AGENTS.md`    | `~/.config/opencode/skills/`  |
+| GitHub Copilot  | `~/.copilot/`           | `AGENTS.md`    | `~/.copilot/skills/`          |
 
 Tools are pre-checked when their binary is on `PATH` or their config directory exists.
 
@@ -30,6 +31,7 @@ Pick one tool for the current directory. Codex and OpenCode share the AGENTS for
 | Claude Code                  | `<cwd>/CLAUDE.md`     | `<cwd>/.claude/skills/`     |
 | Codex                        | `<cwd>/AGENTS.md`     | `<cwd>/.agents/skills/`     |
 | OpenCode                     | `<cwd>/AGENTS.md`     | `<cwd>/.agents/skills/`     |
+| GitHub Copilot               | `<cwd>/AGENTS.md`     | `<cwd>/.github/skills/`     |
 
 Skills marked `required: true` (currently `caveman`) are non-toggleable. Re-runs are idempotent: the CLI hashes each unit and silently skips matches; on mismatch you get a per-unit prompt with `[o]verwrite / [s]kip / [d]iff / [b]ackup`.
 

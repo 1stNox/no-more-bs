@@ -1,7 +1,7 @@
 import os from "node:os";
 import path from "node:path";
 
-export type ToolId = "claude" | "codex" | "opencode" | "pi";
+export type ToolId = "claude" | "codex" | "opencode" | "pi" | "copilot";
 export type Scope = "user" | "project";
 
 export interface Tool {
@@ -48,6 +48,14 @@ export function getTools(): Tool[] {
       topLevelMd: "AGENTS.md",
       skillsDir: path.join(home, ".pi", "agent", "skills"),
     },
+    {
+      id: "copilot",
+      label: "GitHub Copilot",
+      binary: "copilot",
+      configDir: path.join(home, ".copilot"),
+      topLevelMd: "AGENTS.md",
+      skillsDir: path.join(home, ".copilot", "skills"),
+    },
   ];
 }
 
@@ -91,6 +99,14 @@ export function getProjectTools(cwd: string): Tool[] {
       configDir: cwd,
       topLevelMd: "AGENTS.md",
       skillsDir: path.join(cwd, ".pi", "skills"),
+    },
+    {
+      id: "copilot",
+      label: "GitHub Copilot",
+      binary: "copilot",
+      configDir: cwd,
+      topLevelMd: "AGENTS.md",
+      skillsDir: path.join(cwd, ".github", "skills"),
     },
   ];
 }

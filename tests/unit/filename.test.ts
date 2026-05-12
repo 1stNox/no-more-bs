@@ -15,6 +15,10 @@ describe("mapTopLevelMd", () => {
     expect(mapTopLevelMd("opencode")).toBe("AGENTS.md");
   });
 
+  it("maps copilot → AGENTS.md", () => {
+    expect(mapTopLevelMd("copilot")).toBe("AGENTS.md");
+  });
+
   it("throws on unknown id", () => {
     // @ts-expect-error testing runtime guard
     expect(() => mapTopLevelMd("unknown")).toThrow(/unknown tool/);
@@ -47,5 +51,14 @@ describe("getProjectTools", () => {
     expect(t!.configDir).toBe(cwd);
     expect(t!.topLevelMd).toBe("AGENTS.md");
     expect(t!.skillsDir).toBe(path.join(cwd, ".agents", "skills"));
+  });
+
+  it("copilot project uses cwd as configDir, AGENTS.md and .github/skills", () => {
+    const cwd = "/tmp/proj";
+    const t = getProjectTools(cwd).find((x) => x.id === "copilot");
+    expect(t).toBeDefined();
+    expect(t!.configDir).toBe(cwd);
+    expect(t!.topLevelMd).toBe("AGENTS.md");
+    expect(t!.skillsDir).toBe(path.join(cwd, ".github", "skills"));
   });
 });
