@@ -118,7 +118,7 @@ describe("pickProjectTool", () => {
     expect(result.skillsDir).toBe("/tmp/proj/.agents/skills");
   });
 
-  it("offers exactly Claude / Codex / OpenCode", async () => {
+  it("offers exactly Claude / Codex / OpenCode / Pi", async () => {
     const tools = getProjectTools("/tmp/proj");
     let captured: any;
     const stub = (async (cfg: any) => {
@@ -127,7 +127,7 @@ describe("pickProjectTool", () => {
     }) as any;
     const result = await pickProjectTool(tools, { select: stub });
     const values = captured.choices.map((c: any) => c.value);
-    expect(values).toEqual(["claude", "codex", "opencode"]);
+    expect(values).toEqual(["claude", "codex", "opencode", "pi"]);
     expect(result.id).toBe("claude");
     expect(result.configDir).toBe("/tmp/proj");
     expect(result.skillsDir).toBe("/tmp/proj/.claude/skills");
