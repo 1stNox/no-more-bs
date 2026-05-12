@@ -15,6 +15,7 @@ export interface Tool {
 
 export function getTools(): Tool[] {
   const home = os.homedir();
+  const copilotHome = process.env.COPILOT_HOME?.trim() || path.join(home, ".copilot");
   return [
     {
       id: "claude",
@@ -52,9 +53,9 @@ export function getTools(): Tool[] {
       id: "copilot",
       label: "GitHub Copilot",
       binary: "copilot",
-      configDir: path.join(home, ".copilot"),
+      configDir: copilotHome,
       topLevelMd: "AGENTS.md",
-      skillsDir: path.join(home, ".copilot", "skills"),
+      skillsDir: path.join(copilotHome, "skills"),
     },
   ];
 }
@@ -67,6 +68,7 @@ export function mapTopLevelMd(id: ToolId): "CLAUDE.md" | "AGENTS.md" {
 
 export function getProjectTools(cwd: string): Tool[] {
   const agentsSkills = path.join(cwd, ".agents", "skills");
+  const githubSkills = path.join(cwd, ".github", "skills");
   return [
     {
       id: "claude",
@@ -106,7 +108,7 @@ export function getProjectTools(cwd: string): Tool[] {
       binary: "copilot",
       configDir: cwd,
       topLevelMd: "AGENTS.md",
-      skillsDir: path.join(cwd, ".github", "skills"),
+      skillsDir: githubSkills,
     },
   ];
 }

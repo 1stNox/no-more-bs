@@ -10,6 +10,7 @@ import { enumerate } from "../../src/lib/templates.ts";
 const REPO_TEMPLATES = path.join(import.meta.dir, "../../templates");
 
 function fakeTools(home: string): Tool[] {
+  const copilotHome = process.env.COPILOT_HOME?.trim() || path.join(home, ".copilot");
   return [
     {
       id: "claude",
@@ -47,9 +48,9 @@ function fakeTools(home: string): Tool[] {
       id: "copilot",
       label: "GitHub Copilot",
       binary: "copilot",
-      configDir: path.join(home, ".copilot"),
+      configDir: copilotHome,
       topLevelMd: "AGENTS.md",
-      skillsDir: path.join(home, ".copilot", "skills"),
+      skillsDir: path.join(copilotHome, "skills"),
     },
   ];
 }
@@ -89,7 +90,8 @@ describe("init integration", () => {
     expect(fs.existsSync(path.join(home, ".agents", "AGENTS.md"))).toBe(true);
     expect(fs.existsSync(path.join(home, ".config", "opencode", "AGENTS.md"))).toBe(true);
     expect(fs.existsSync(path.join(home, ".pi", "agent", "AGENTS.md"))).toBe(true);
-    expect(fs.existsSync(path.join(home, ".copilot", "AGENTS.md"))).toBe(true);
+    const copilotHome = process.env.COPILOT_HOME?.trim() || path.join(home, ".copilot");
+    expect(fs.existsSync(path.join(copilotHome, "AGENTS.md"))).toBe(true);
 
     const generalSrc = fs.readFileSync(tpl.generalMd, "utf-8");
     expect(fs.readFileSync(path.join(home, ".agents", "AGENTS.md"), "utf-8")).toBe(generalSrc);
@@ -99,7 +101,7 @@ describe("init integration", () => {
     expect(fs.existsSync(path.join(home, ".pi", "agent", "skills", "caveman", "SKILL.md"))).toBe(
       true,
     );
-    expect(fs.existsSync(path.join(home, ".copilot", "skills", "caveman", "SKILL.md"))).toBe(true);
+    expect(fs.existsSync(path.join(copilotHome, "skills", "caveman", "SKILL.md"))).toBe(true);
   });
 
   it("idempotent re-run produces zero prompts", async () => {

@@ -1,7 +1,7 @@
 {
   "name": "no-more-bs",
-  "version": "0.4.0",
-  "description": "Bootstrap shared behavioural instructions and skills across Claude Code, Codex, and OpenCode.",
+  "version": "0.5.0",
+  "description": "Bootstrap shared behavioural instructions and skills across Claude Code, Codex, OpenCode, Pi, and GitHub Copilot.",
   "license": "MIT",
   "repository": {
     "type": "git",
