@@ -32,6 +32,7 @@ Pick one tool for the current directory. Codex and OpenCode share the AGENTS for
 | Claude Code                  | `<cwd>/CLAUDE.md`     | `<cwd>/.claude/skills/`     |
 | Codex                        | `<cwd>/AGENTS.md`     | `<cwd>/.agents/skills/`     |
 | OpenCode                     | `<cwd>/AGENTS.md`     | `<cwd>/.agents/skills/`     |
+| Pi                           | `<cwd>/AGENTS.md`     | `<cwd>/.pi/skills/`         |
 | GitHub Copilot               | `<cwd>/AGENTS.md`     | `<cwd>/.github/skills/`     |
 
 Skills marked `required: true` (currently `caveman`) are non-toggleable. Re-runs are idempotent: the CLI hashes each unit and silently skips matches; on mismatch you get a per-unit prompt with `[o]verwrite / [s]kip / [d]iff / [b]ackup`.
