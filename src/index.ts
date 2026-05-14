@@ -73,7 +73,11 @@ async function runInit(): Promise<number> {
     selectedTools = [picked];
   }
 
-  const selectedSkills = await pickSkills(tpl.skills);
+  const piOnly = selectedTools.length === 1 && selectedTools[0]?.id === "pi";
+  const hasPi = !piOnly && selectedTools.some((t) => t.id === "pi");
+
+  const skillsForMenu = piOnly ? tpl.skills.filter((s) => s.id !== "git-guardrails") : tpl.skills;
+  const selectedSkills = await pickSkills(skillsForMenu);
 
   const summary: CopySummary = { installed: 0, skipped: 0, failed: 0, details: [] };
 
@@ -89,6 +93,7 @@ async function runInit(): Promise<number> {
       skills: selectedSkills,
       prompt: (unitName) => pickConflict(unitName),
       out: process.stdout,
+      toolSkillExclusions: hasPi ? { pi: ["git-guardrails"] } : undefined,
     },
     summary,
   );

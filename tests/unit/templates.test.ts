@@ -7,10 +7,10 @@ import { enumerate } from "../../src/lib/templates.ts";
 const REPO_TEMPLATES = path.join(import.meta.dir, "../../templates");
 
 describe("enumerate (real templates/)", () => {
-  it("returns GENERAL.md path and all 10 skills", () => {
+  it("returns GENERAL.md path and all 11 skills", () => {
     const t = enumerate(REPO_TEMPLATES);
     expect(t.generalMd).toBe(path.join(REPO_TEMPLATES, "GENERAL.md"));
-    expect(t.skills.length).toBe(10);
+    expect(t.skills.length).toBe(11);
   });
 
   it("marks caveman as required and others as not required", () => {
