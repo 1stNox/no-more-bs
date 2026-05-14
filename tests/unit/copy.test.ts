@@ -109,6 +109,31 @@ describe("copy", () => {
     expect(fs.existsSync(path.join(tool.skillsDir, "alpha"))).toBe(true);
   });
 
+  it("skips excluded skill for specified tool but installs for others", async () => {
+    const tool2: Tool = {
+      id: "codex" as any,
+      label: "Codex",
+      binary: "codex",
+      configDir: path.join(tmp, "home", ".agents"),
+      topLevelMd: "AGENTS.md",
+      skillsDir: path.join(tmp, "home", ".agents", "skills"),
+    };
+    const summary = await copy({
+      tools: [tool, tool2],
+      generalMd,
+      skills: [skill],
+      prompt: always("overwrite"),
+      toolSkillExclusions: { claude: ["alpha"] },
+    });
+    expect(fs.existsSync(path.join(tool.skillsDir, "alpha"))).toBe(false);
+    expect(fs.existsSync(path.join(tool2.skillsDir, "alpha", "SKILL.md"))).toBe(true);
+    const skipped = summary.details.find(
+      (d) => d.toolId === "claude" && d.unitName === "skill:alpha",
+    );
+    expect(skipped?.outcome).toBe("skipped");
+    expect(skipped?.message).toBe("not supported by this tool");
+  });
+
   it("backs up existing target when user picks backup", async () => {
     await copy({ tools: [tool], generalMd, skills: [skill], prompt: always("overwrite") });
     const targetMd = path.join(tool.configDir, "CLAUDE.md");

@@ -28,6 +28,7 @@ export interface CopyInput {
   skills: SkillEntry[];
   prompt: ResolveInput["prompt"];
   out?: NodeJS.WritableStream;
+  toolSkillExclusions?: Record<string, string[]>;
 }
 
 interface Unit {
@@ -35,6 +36,7 @@ interface Unit {
   kind: UnitKind;
   src: string;
   dst: (tool: Tool) => string;
+  skillId?: string;
 }
 
 function units(input: CopyInput): Unit[] {
@@ -52,6 +54,7 @@ function units(input: CopyInput): Unit[] {
       kind: "dir",
       src: s.dir,
       dst: (t) => path.join(t.skillsDir, s.id),
+      skillId: s.id,
     });
   }
   return list;
@@ -82,6 +85,10 @@ export async function copy(input: CopyInput, summary?: CopySummary): Promise<Cop
 
   for (const tool of input.tools) {
     for (const u of units(input)) {
+      if (u.skillId && input.toolSkillExclusions?.[tool.id]?.includes(u.skillId)) {
+        record(tool.id, u.name, "skipped", "not supported by this tool");
+        continue;
+      }
       const dst = u.dst(tool);
       try {
         if (!fs.existsSync(dst)) {
