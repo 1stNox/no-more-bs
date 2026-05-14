@@ -6,11 +6,6 @@ Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-s
 
 Always use the caveman skill unless instructed otherwise.
 
-If a complex change is requested, ask the user if they want to use the grill-with-docs skill first.
-If that's the case activate the grill-with-docs skill.
-A complex change could be a multi-file change, a change that requires understanding of multiple parts of the codebase,
-or a change that involves complex logic like non trivial bugs or adding new features.
-
 ## 1. Think Before Coding
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
