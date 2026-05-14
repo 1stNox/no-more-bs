@@ -1,7 +1,7 @@
 import os from "node:os";
 import path from "node:path";
 
-export type ToolId = "claude" | "codex" | "opencode" | "pi";
+export type ToolId = "claude" | "codex" | "opencode" | "pi" | "copilot";
 export type Scope = "user" | "project";
 
 export interface Tool {
@@ -15,6 +15,7 @@ export interface Tool {
 
 export function getTools(): Tool[] {
   const home = os.homedir();
+  const copilotHome = process.env.COPILOT_HOME?.trim() || path.join(home, ".copilot");
   return [
     {
       id: "claude",
@@ -48,6 +49,14 @@ export function getTools(): Tool[] {
       topLevelMd: "AGENTS.md",
       skillsDir: path.join(home, ".pi", "agent", "skills"),
     },
+    {
+      id: "copilot",
+      label: "GitHub Copilot",
+      binary: "copilot",
+      configDir: copilotHome,
+      topLevelMd: "AGENTS.md",
+      skillsDir: path.join(copilotHome, "skills"),
+    },
   ];
 }
 
@@ -59,6 +68,7 @@ export function mapTopLevelMd(id: ToolId): "CLAUDE.md" | "AGENTS.md" {
 
 export function getProjectTools(cwd: string): Tool[] {
   const agentsSkills = path.join(cwd, ".agents", "skills");
+  const githubSkills = path.join(cwd, ".github", "skills");
   return [
     {
       id: "claude",
@@ -91,6 +101,14 @@ export function getProjectTools(cwd: string): Tool[] {
       configDir: cwd,
       topLevelMd: "AGENTS.md",
       skillsDir: path.join(cwd, ".pi", "skills"),
+    },
+    {
+      id: "copilot",
+      label: "GitHub Copilot",
+      binary: "copilot",
+      configDir: cwd,
+      topLevelMd: "AGENTS.md",
+      skillsDir: githubSkills,
     },
   ];
 }
