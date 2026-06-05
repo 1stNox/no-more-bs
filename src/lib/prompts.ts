@@ -1,4 +1,4 @@
-import { checkbox, select } from "@inquirer/prompts";
+import { checkbox, confirm, select } from "@inquirer/prompts";
 import type { ResolverChoice } from "./conflict.ts";
 import type { Scope, Tool } from "./registry.ts";
 import type { SkillEntry } from "./templates.ts";
@@ -6,12 +6,24 @@ import type { SkillEntry } from "./templates.ts";
 export interface PromptDeps {
   checkbox?: typeof checkbox;
   select?: typeof select;
+  confirm?: typeof confirm;
 }
 
 export async function pickScope(deps: PromptDeps = {}): Promise<Scope> {
   const ask = deps.select ?? select;
   return (await ask({
     message: "Install scope:",
+    choices: [
+      { name: "User (global, all projects)", value: "user" },
+      { name: "Project (current directory)", value: "project" },
+    ],
+  })) as Scope;
+}
+
+export async function pickClearScope(deps: PromptDeps = {}): Promise<Scope> {
+  const ask = deps.select ?? select;
+  return (await ask({
+    message: "Clear scope:",
     choices: [
       { name: "User (global, all projects)", value: "user" },
       { name: "Project (current directory)", value: "project" },
@@ -86,4 +98,18 @@ export async function pickConflict(
       { name: "[b]ackup", value: "backup" },
     ],
   })) as ResolverChoice;
+}
+
+export async function confirmClear(
+  tools: Tool[],
+  scope: Scope,
+  deps: PromptDeps = {},
+): Promise<boolean> {
+  const ask = deps.confirm ?? confirm;
+  const toolNames = tools.map((t) => t.label).join(", ");
+  const scopeLabel = scope === "user" ? "user (global)" : `project (${process.cwd()})`;
+  return (await ask({
+    message: `Are you sure you want to remove no-more-bs files for: ${toolNames} (${scopeLabel})?`,
+    default: false,
+  })) as boolean;
 }

@@ -7,7 +7,11 @@ describe("parseArgv", () => {
   });
 
   it("accepts the init verb", () => {
-    expect(parseArgv(["init"])).toEqual({ ok: true });
+    expect(parseArgv(["init"])).toEqual({ ok: true, command: "init" });
+  });
+
+  it("accepts the clear verb", () => {
+    expect(parseArgv(["clear"])).toEqual({ ok: true, command: "clear" });
   });
 
   it("rejects an unknown verb", () => {
@@ -18,5 +22,14 @@ describe("parseArgv", () => {
 
   it("rejects extra positional args", () => {
     expect(parseArgv(["init", "extra"]).ok).toBe(false);
+  });
+
+  it("rejects clear with extra args", () => {
+    expect(parseArgv(["clear", "extra"]).ok).toBe(false);
+  });
+
+  it("usage includes clear command", () => {
+    const r = parseArgv(["unknown"]);
+    expect(r.usage).toMatch(/init\|clear/);
   });
 });

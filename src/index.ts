@@ -3,20 +3,32 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { type CopySummary, copy } from "./lib/copy.ts";
+import { type ClearSummary, clear, printClearSummary } from "./lib/clear.ts";
 import { detectTool } from "./lib/detect.ts";
-import { pickConflict, pickProjectTool, pickScope, pickSkills, pickTools } from "./lib/prompts.ts";
+import {
+  pickConflict,
+  pickProjectTool,
+  pickScope,
+  pickSkills,
+  pickTools,
+  pickClearScope,
+  confirmClear,
+} from "./lib/prompts.ts";
 import { getProjectTools, getTools, type Tool } from "./lib/registry.ts";
 import { enumerate } from "./lib/templates.ts";
 
 export interface ArgvParse {
   ok: boolean;
   usage?: string;
+  command?: "init" | "clear";
 }
 
 export function parseArgv(argv: string[]): ArgvParse {
   if (argv.length === 0) return { ok: true };
-  if (argv.length === 1 && argv[0] === "init") return { ok: true };
-  return { ok: false, usage: "Usage: no-more-bs [init]" };
+  if (argv.length === 1 && (argv[0] === "init" || argv[0] === "clear")) {
+    return { ok: true, command: argv[0] };
+  }
+  return { ok: false, usage: "Usage: no-more-bs [init|clear]\n\nCommands:\n  init  - Install behavioural instructions and skills\n  clear - Remove installed files" };
 }
 
 function defaultTemplatesDir(): string {
@@ -102,13 +114,68 @@ async function runInit(): Promise<number> {
   return summary.failed > 0 ? 1 : 0;
 }
 
+async function runClear(): Promise<number> {
+  const scope = await pickClearScope();
+
+  let selectedTools: Tool[];
+  if (scope === "user") {
+    const tools = getTools();
+    const detected: Record<string, boolean> = {};
+    for (const t of tools) detected[t.id] = detectTool(t);
+
+    const existing = tools.filter((t) => fs.existsSync(t.configDir));
+    const banner = existing.length
+      ? `Clearing existing install at: ${existing.map((t) => t.configDir).join(", ")}\n`
+      : `No existing install detected\n`;
+    process.stdout.write(banner);
+
+    selectedTools = await pickTools(tools, detected);
+    if (selectedTools.length === 0) {
+      process.stdout.write("No tools selected. Nothing to do.\n");
+      return 0;
+    }
+  } else {
+    const cwd = process.cwd();
+    process.stdout.write(`Clearing from project: ${cwd}\n`);
+    const projectTools = getProjectTools(cwd);
+    const picked = await pickProjectTool(projectTools);
+    if (picked.id === "codex" || picked.id === "opencode") {
+      process.stdout.write(
+        "Codex and OpenCode share the AGENTS format — both are covered by this clear.\n",
+      );
+    }
+    selectedTools = [picked];
+  }
+
+  const confirmed = await confirmClear(selectedTools, scope);
+  if (!confirmed) {
+    process.stdout.write("Cancelled.\n");
+    return 0;
+  }
+
+  const summary: ClearSummary = { removed: 0, failed: 0, details: [] };
+
+  await clear(
+    {
+      tools: selectedTools,
+      out: process.stdout,
+    },
+    summary,
+  );
+
+  printClearSummary(summary);
+  return summary.failed > 0 ? 1 : 0;
+}
+
 if (import.meta.main) {
   const parsed = parseArgv(process.argv.slice(2));
   if (!parsed.ok) {
     process.stderr.write(`${parsed.usage}\n`);
     process.exit(2);
   }
-  runInit()
+  const command = parsed.command ?? "init";
+  const runner = command === "clear" ? runClear : runInit;
+  runner()
     .then((code) => process.exit(code))
     .catch((err) => {
       process.stderr.write(`error: ${err instanceof Error ? err.message : String(err)}\n`);

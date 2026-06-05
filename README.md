@@ -4,6 +4,8 @@ Bootstrap shared behavioural instructions and reusable skills across Claude Code
 
 ## What it does
 
+### Install: `no-more-bs init`
+
 `no-more-bs init` first asks for the install scope:
 
 - **User** (global, all projects) — copies into the user-global config dir of each selected tool.
@@ -40,6 +42,20 @@ Skills marked `required: true` (currently `caveman`) are non-toggleable. Re-runs
 ## Bundled skills
 
 `caveman`, `git-guardrails`, `grill-me`, `grill-with-docs`, `handoff`, `improve-codebase-architecture`, `prototype`, `tdd`, `write-a-skill`, `zoom-out`.
+
+### Clear: `no-more-bs clear`
+
+`no-more-bs clear` removes the files that were installed by `init`. It asks for the clear scope (user or project), lets you select which tools to clear, and asks for confirmation before deleting anything.
+
+For **user scope**, it removes:
+- The top-level instruction file (`CLAUDE.md` or `AGENTS.md`) from each tool's config directory
+- The entire skills directory for each selected tool
+
+For **project scope**, it removes:
+- The top-level instruction file from the current directory
+- The skills directory from the current directory
+
+> **Warning:** This is a destructive operation. The CLI will ask for confirmation and show you exactly which tools and scope will be affected before proceeding.
 
 ## Install
 
