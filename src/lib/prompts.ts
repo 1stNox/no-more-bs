@@ -109,7 +109,8 @@ export async function confirmClear(
   const toolNames = tools.map((t) => t.label).join(", ");
   const scopeLabel = scope === "user" ? "user (global)" : `project (${process.cwd()})`;
   return (await ask({
-    message: `Are you sure you want to remove no-more-bs files for: ${toolNames} (${scopeLabel})?`,
+    message:
+      `Are you sure you want to remove no-more-bs files for: ${toolNames} (${scopeLabel})?`,
     default: false,
   })) as boolean;
 }

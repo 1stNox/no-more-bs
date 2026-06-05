@@ -28,7 +28,16 @@ export function parseArgv(argv: string[]): ArgvParse {
   if (argv.length === 1 && (argv[0] === "init" || argv[0] === "clear")) {
     return { ok: true, command: argv[0] };
   }
-  return { ok: false, usage: "Usage: no-more-bs [init|clear]\n\nCommands:\n  init  - Install behavioural instructions and skills\n  clear - Remove installed files" };
+  return {
+    ok: false,
+    usage: [
+      "Usage: no-more-bs [init|clear]",
+      "",
+      "Commands:",
+      "  init  - Install behavioural instructions and skills",
+      "  clear - Remove installed files",
+    ].join("\n"),
+  };
 }
 
 function defaultTemplatesDir(): string {
@@ -36,9 +45,13 @@ function defaultTemplatesDir(): string {
   return path.join(here, "..", "templates");
 }
 
-export function printSummary(summary: CopySummary, out: NodeJS.WritableStream = process.stdout) {
+export function printSummary(
+  summary: CopySummary,
+  out: NodeJS.WritableStream = process.stdout,
+) {
   out.write(
-    `\nSummary: ${summary.installed} installed, ${summary.skipped} skipped, ${summary.failed} failed.\n`,
+    `\nSummary: ${summary.installed} installed, ${summary.skipped} skipped, ` +
+      `${summary.failed} failed.\n`,
   );
   for (const d of summary.details) {
     if (d.outcome === "failed") {
@@ -88,7 +101,9 @@ async function runInit(): Promise<number> {
   const piOnly = selectedTools.length === 1 && selectedTools[0]?.id === "pi";
   const hasPi = !piOnly && selectedTools.some((t) => t.id === "pi");
 
-  const skillsForMenu = piOnly ? tpl.skills.filter((s) => s.id !== "git-guardrails") : tpl.skills;
+  const skillsForMenu = piOnly
+    ? tpl.skills.filter((s) => s.id !== "git-guardrails")
+    : tpl.skills;
   const selectedSkills = await pickSkills(skillsForMenu);
 
   const summary: CopySummary = { installed: 0, skipped: 0, failed: 0, details: [] };

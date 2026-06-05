@@ -44,7 +44,12 @@ function units(): Unit[] {
 export async function clear(input: ClearInput, summary?: ClearSummary): Promise<ClearSummary> {
   summary = summary ?? { removed: 0, failed: 0, details: [] };
 
-  const record = (toolId: string, unitName: string, outcome: ClearResult["outcome"], message?: string) => {
+  const record = (
+    toolId: string,
+    unitName: string,
+    outcome: ClearResult["outcome"],
+    message?: string,
+  ) => {
     if (outcome === "removed") summary.removed++;
     else if (outcome === "failed") summary.failed++;
     summary.details.push({ toolId, unitName, outcome, message });
@@ -72,7 +77,10 @@ export async function clear(input: ClearInput, summary?: ClearSummary): Promise<
   return summary;
 }
 
-export function printClearSummary(summary: ClearSummary, out: NodeJS.WritableStream = process.stdout) {
+export function printClearSummary(
+  summary: ClearSummary,
+  out: NodeJS.WritableStream = process.stdout,
+) {
   out.write(
     `\nSummary: ${summary.removed} removed, ${summary.failed} failed.\n`,
   );
