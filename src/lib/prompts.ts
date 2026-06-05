@@ -114,7 +114,6 @@ export async function confirmClear(
       { name: "Yes", value: true },
       { name: "No", value: false },
     ],
-    default: false,
   })) as boolean;
   return answer;
 }
