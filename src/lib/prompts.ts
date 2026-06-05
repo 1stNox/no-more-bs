@@ -1,5 +1,4 @@
-import { checkbox, select } from "@inquirer/prompts";
-import { confirm } from "@inquirer/confirm";
+import { checkbox, confirm, select } from "@inquirer/prompts";
 import type { ResolverChoice } from "./conflict.ts";
 import type { Scope, Tool } from "./registry.ts";
 import type { SkillEntry } from "./templates.ts";
