@@ -2,8 +2,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { type CopySummary, copy } from "./lib/copy.ts";
-import { type ClearSummary, clear, printClearSummary } from "./lib/clear.ts";
+import { CopySummary, copy } from "./lib/copy.ts";
+import { ClearSummary, clear, printClearSummary } from "./lib/clear.ts";
 import { detectTool } from "./lib/detect.ts";
 import {
   pickConflict,
