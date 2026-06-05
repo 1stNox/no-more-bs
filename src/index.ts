@@ -173,7 +173,6 @@ async function runClear(): Promise<number> {
   await clear(
     {
       tools: selectedTools,
-      out: process.stdout,
     },
     summary,
   );

@@ -17,7 +17,6 @@ export interface ClearResult {
 
 export interface ClearInput {
   tools: Tool[];
-  out?: NodeJS.WritableStream;
 }
 
 interface Unit {
