@@ -1,4 +1,4 @@
-import { checkbox, confirm, select } from "@inquirer/prompts";
+import { checkbox, select } from "@inquirer/prompts";
 import type { ResolverChoice } from "./conflict.ts";
 import type { Scope, Tool } from "./registry.ts";
 import type { SkillEntry } from "./templates.ts";
@@ -6,7 +6,6 @@ import type { SkillEntry } from "./templates.ts";
 export interface PromptDeps {
   checkbox?: typeof checkbox;
   select?: typeof select;
-  confirm?: typeof confirm;
 }
 
 export async function pickScope(deps: PromptDeps = {}): Promise<Scope> {
@@ -105,12 +104,17 @@ export async function confirmClear(
   scope: Scope,
   deps: PromptDeps = {},
 ): Promise<boolean> {
-  const ask = deps.confirm ?? confirm;
+  const ask = deps.select ?? select;
   const toolNames = tools.map((t) => t.label).join(", ");
   const scopeLabel = scope === "user" ? "user (global)" : `project (${process.cwd()})`;
-  return (await ask({
+  const answer = (await ask({
     message:
       `Are you sure you want to remove no-more-bs files for: ${toolNames} (${scopeLabel})?`,
+    choices: [
+      { name: "Yes", value: true },
+      { name: "No", value: false },
+    ],
     default: false,
   })) as boolean;
+  return answer;
 }
